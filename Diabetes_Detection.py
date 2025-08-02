@@ -25,6 +25,7 @@ def load_data():
     return pd.read_csv(url, encoding='Windows-1252')
 
 df = load_data()
+df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 df.columns = [col.strip() for col in df.columns]
 
 # Sidebar
@@ -40,8 +41,11 @@ if section == "Data Overview":
     st.write("Shape:", df.shape)
     st.dataframe(df.head())
 
-    st.subheader("Missing Values")
-    st.write(df.isnull().sum())
+    st.subheader("Zero Value Check (Invalid Entries)")
+
+    zero_values = (df[["Glucose", "BloodPressure", "SkinThickness", "BMI", "Insulin"]] == 0).sum()
+    st.dataframe(zero_values.to_frame(name='Count'))
+
 
     st.subheader("Outcome Distribution")
     fig1, ax1 = plt.subplots()
@@ -105,3 +109,4 @@ elif section == "Modeling":
     ax4.set_title("Model Accuracy")
     ax4.set_xticklabels(ax4.get_xticklabels(), rotation=45)
     st.pyplot(fig4)
+
