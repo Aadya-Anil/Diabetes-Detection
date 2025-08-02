@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 url = "https://raw.githubusercontent.com/Aadya-Anil/Diabetes-Detection/main/Diabetes%20data.csv"
@@ -87,4 +86,5 @@ for name, model in models:
     scores.append(accuracy_score(y_test, y_pred)*100)
     names.append(name)
 tr_split = pd.DataFrame({'Name': names, 'Score': scores})
+
 print(tr_split)
