@@ -21,15 +21,15 @@ st.title("🩺 Diabetes Detection Dashboard")
 # Sidebar navigation
 section = st.sidebar.radio("Go to", ["Data Overview", "EDA", "Modeling"])
 
-# Show project summary toggle
-if st.sidebar.checkbox("\ud83d\udcd8 Show Project Summary"):
-    st.markdown("## \ud83e\ude7a Diabetes Detection using Machine Learning")
+# Show project summary toggle (using plain ASCII to avoid Unicode issues)
+if st.sidebar.checkbox("Show Project Summary"):
+    st.markdown("## Diabetes Detection using Machine Learning")
     st.markdown("""
 This project applies a range of supervised machine learning algorithms to predict diabetes based on medical diagnostic features. 
 The dataset used is from the **Pima Indians Diabetes Database**.
 """)
 
-    st.markdown("### \ud83e\uddf1\u200d\ud83e\uddf2 Project Structure")
+    st.markdown("### Project Structure")
     st.markdown("""
 - **Data Preprocessing**: 
     - Loaded the dataset and removed invalid zero values from key medical features like *Glucose*, *Blood Pressure*, *BMI*, etc.
@@ -48,7 +48,7 @@ The dataset used is from the **Pima Indians Diabetes Database**.
     - Evaluated using accuracy scores.
 """)
 
-    st.markdown("### \ud83d\udcca Results")
+    st.markdown("### Results")
     result_table = pd.DataFrame({
         "Model": ["K-Nearest Neighbors", "SVC", "Logistic Regression", "Decision Tree", 
                   "Naive Bayes", "Random Forest", "Gradient Boosting"],
@@ -56,7 +56,7 @@ The dataset used is from the **Pima Indians Diabetes Database**.
     }).set_index("Model")
     st.dataframe(result_table)
 
-    st.markdown("\u2705 **Best Performing Model:** Random Forest with **78.45% accuracy**.")
+    st.markdown("**Best Performing Model:** Random Forest with **78.45% accuracy**.")
 
 # Load and clean data
 url = "https://raw.githubusercontent.com/Aadya-Anil/Diabetes-Detection/main/Diabetes%20data.csv"
@@ -123,4 +123,4 @@ elif section == "Modeling":
     st.dataframe(tr_split.set_index('Model'))
 
     best_model = tr_split.sort_values("Accuracy (%)", ascending=False).iloc[0]
-    st.success(f"\ud83c\udfc6 Best Model: {best_model['Model']} with {best_model['Accuracy (%)']:.2f}% accuracy")
+    st.success(f"Best Model: {best_model['Model']} with {best_model['Accuracy (%)']:.2f}% accuracy")
