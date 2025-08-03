@@ -168,12 +168,12 @@ elif section == "Live Prediction":
 
     input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, insulin, bmi, dpf, age]])
     # Re-train best model in Live Prediction scope
-X = df[["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]]
-y = df["Outcome"]
-X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=0)
+    X = df[["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]]
+    y = df["Outcome"]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=0)
 
-best_model = RandomForestClassifier()
-best_model.fit(X_train, y_train)
+    best_model = RandomForestClassifier()
+    best_model.fit(X_train, y_train)
 
     if st.button("Predict"):
         prediction = best_model.predict(input_data)[0]
@@ -181,4 +181,5 @@ best_model.fit(X_train, y_train)
             st.error("⚠️ The model predicts a high risk of diabetes.")
         else:
             st.success("✅ The model predicts a low risk of diabetes.")
+
 
