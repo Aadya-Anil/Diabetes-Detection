@@ -4,109 +4,123 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 
-# Page config
+# Set page config
 st.set_page_config(page_title="Diabetes Detection", layout="wide")
 
 st.title("🩺 Diabetes Detection Dashboard")
 
-# Load dataset
-@st.cache_data
-def load_data():
-    url = "https://raw.githubusercontent.com/Aadya-Anil/Diabetes-Detection/main/Diabetes%20data.csv"
-    return pd.read_csv(url, encoding='Windows-1252')
-
-df = load_data()
-df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-df.columns = [col.strip() for col in df.columns]
-
-# Sidebar
-st.sidebar.header("Navigation")
+# Sidebar navigation
 section = st.sidebar.radio("Go to", ["Data Overview", "EDA", "Modeling"])
 
-# Shared data cleaning
-df_cleaned = df[(df.BloodPressure != 0) & (df.BMI != 0) & (df.Glucose != 0)]
+# Show project summary toggle
+if st.sidebar.checkbox("\ud83d\udcd8 Show Project Summary"):
+    st.markdown("## \ud83e\ude7a Diabetes Detection using Machine Learning")
+    st.markdown("""
+This project applies a range of supervised machine learning algorithms to predict diabetes based on medical diagnostic features. 
+The dataset used is from the **Pima Indians Diabetes Database**.
+""")
 
-# Section: Data Overview
+    st.markdown("### \ud83e\uddf1\u200d\ud83e\uddf2 Project Structure")
+    st.markdown("""
+- **Data Preprocessing**: 
+    - Loaded the dataset and removed invalid zero values from key medical features like *Glucose*, *Blood Pressure*, *BMI*, etc.
+- **Exploratory Data Analysis**:
+    - Visualized distributions and compared features across diabetic and non-diabetic groups.
+- **Model Training and Evaluation**:
+    - Tested 7 ML algorithms:
+        - K-Nearest Neighbors (KNN)  
+        - Support Vector Classifier (SVC)  
+        - Logistic Regression (LR)  
+        - Decision Tree (DT)  
+        - Gaussian Naive Bayes (GNB)  
+        - Random Forest (RF)  
+        - Gradient Boosting (GB)
+    - Applied stratified train-test split.
+    - Evaluated using accuracy scores.
+""")
+
+    st.markdown("### \ud83d\udcca Results")
+    result_table = pd.DataFrame({
+        "Model": ["K-Nearest Neighbors", "SVC", "Logistic Regression", "Decision Tree", 
+                  "Naive Bayes", "Random Forest", "Gradient Boosting"],
+        "Accuracy (%)": [72.92, 74.03, 76.24, 71.82, 73.48, 78.45, 77.34]
+    }).set_index("Model")
+    st.dataframe(result_table)
+
+    st.markdown("\u2705 **Best Performing Model:** Random Forest with **78.45% accuracy**.")
+
+# Load and clean data
+url = "https://raw.githubusercontent.com/Aadya-Anil/Diabetes-Detection/main/Diabetes%20data.csv"
+df = pd.read_csv(url, encoding='Windows-1252')
+df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
+# Filter out invalid zero values
+df = df[(df['Glucose'] != 0) & (df['BloodPressure'] != 0) & (df['BMI'] != 0)]
+
 if section == "Data Overview":
     st.subheader("Dataset Preview")
-    st.write("Shape:", df.shape)
-    st.dataframe(df.head())
+    st.dataframe(df.head().reset_index(drop=True))
 
     st.subheader("Zero Value Check (Invalid Entries)")
-
     zero_values = (df[["Glucose", "BloodPressure", "SkinThickness", "BMI", "Insulin"]] == 0).sum()
     st.dataframe(zero_values.to_frame(name='Count'))
 
-
-    st.subheader("Outcome Distribution")
+elif section == "EDA":
+    st.subheader("Glucose Distribution")
     fig1, ax1 = plt.subplots()
-    sns.countplot(x="Outcome", data=df, palette="Set2", ax=ax1)
-    ax1.set_title("Count of Diabetes Outcomes (0 = No, 1 = Yes)")
+    sns.histplot(df["Glucose"], kde=True, bins=30, ax=ax1, color="skyblue")
     st.pyplot(fig1)
 
-# Section: EDA
-elif section == "EDA":
-    st.subheader("Exploratory Data Analysis")
-
-    col = st.selectbox("Select a feature to visualize", df.columns[:-1])
-    
+    st.subheader("Outcome Count")
     fig2, ax2 = plt.subplots()
-    sns.histplot(df[col], kde=True, bins=30, ax=ax2, color='steelblue')
-    ax2.set_title(f"Distribution of {col}")
+    sns.countplot(x="Outcome", data=df, ax=ax2)
     st.pyplot(fig2)
 
-    if col in ['Glucose', 'BMI', 'BloodPressure', 'Age']:
-        st.subheader(f"{col} vs Outcome")
-        fig3, ax3 = plt.subplots()
-        sns.boxplot(x='Outcome', y=col, data=df, ax=ax3, palette="pastel")
-        ax3.set_title(f"{col} by Diabetes Outcome")
-        st.pyplot(fig3)
-
-# Section: Modeling
 elif section == "Modeling":
-    st.subheader("ML Model Comparison")
+    st.subheader("Model Training & Evaluation")
 
-    features = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness',
-                'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
-    X = df_cleaned[features]
-    y = df_cleaned.Outcome
+    X = df[["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"]]
+    y = df["Outcome"]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=0)
 
     models = [
         ("KNN", KNeighborsClassifier()),
         ("SVC", SVC()),
-        ("Logistic Regression", LogisticRegression()),
-        ("Decision Tree", DecisionTreeClassifier()),
-        ("Naive Bayes", GaussianNB()),
-        ("Random Forest", RandomForestClassifier()),
-        ("Gradient Boosting", GradientBoostingClassifier())
+        ("LR", LogisticRegression()),
+        ("DT", DecisionTreeClassifier()),
+        ("GNB", GaussianNB()),
+        ("RF", RandomForestClassifier()),
+        ("GB", GradientBoostingClassifier())
     ]
 
-    results = []
+    names = []
+    scores = []
+
     for name, model in models:
         model.fit(X_train, y_train)
-        preds = model.predict(X_test)
-        acc = accuracy_score(y_test, preds) * 100
-        results.append((name, acc))
+        y_pred = model.predict(X_test)
+        score = accuracy_score(y_test, y_pred) * 100
+        names.append(name)
+        scores.append(score)
 
-    result_df = pd.DataFrame(results, columns=["Model", "Accuracy (%)"]).sort_values(by="Accuracy (%)", ascending=False)
+    tr_split = pd.DataFrame({'Model': names, 'Accuracy (%)': scores})
 
-    st.dataframe(result_df.set_index("Model"))
+    fig3, ax3 = plt.subplots()
+    sns.barplot(data=tr_split, x='Model', y='Accuracy (%)', ax=ax3)
+    ax3.set_title("Model Accuracy Comparison")
+    st.pyplot(fig3)
 
-    st.subheader("Accuracy Comparison")
-    fig4, ax4 = plt.subplots()
-    sns.barplot(data=result_df, x="Model", y="Accuracy (%)", palette="viridis", ax=ax4)
-    ax4.set_title("Model Accuracy")
-    ax4.set_xticklabels(ax4.get_xticklabels(), rotation=45)
-    st.pyplot(fig4)
+    st.dataframe(tr_split.set_index('Model'))
 
+    best_model = tr_split.sort_values("Accuracy (%)", ascending=False).iloc[0]
+    st.success(f"\ud83c\udfc6 Best Model: {best_model['Model']} with {best_model['Accuracy (%)']:.2f}% accuracy")
