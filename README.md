@@ -38,3 +38,5 @@ Random Forest	                78.45
 Gradient Boosting	            77.34
 
 Best Model: Random Forest Classifier with an accuracy of 78.45%.
+
+Here's a streamlit page of the project : https://diabetes-detectiongit-gufzkcap94z5vz5hgptfmq.streamlit.app/
